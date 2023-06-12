@@ -12,7 +12,9 @@ public class FoodSpawner : MonoBehaviour
     [SerializeField] private bool isSpawning = true;
     [SerializeField] private int maxCount = 50; 
 
-    [SerializeField] private Vector2 mapSize; 
+    [SerializeField] private Vector2 mapSize;
+
+    public Vector2 MapSize => mapSize; 
     private void Start()
     {
         StartCoroutine(StartCreateFood()); 
@@ -41,8 +43,16 @@ public class FoodSpawner : MonoBehaviour
 
         float sizeX = Random.Range(-mapSize.x, mapSize.x);
         float sizeY= Random.Range(-mapSize.y, mapSize.y);
-        food.transform.position = new Vector3(sizeX, 0, sizeY);
+        food.transform.localPosition = new Vector3(sizeX, 0, sizeY);
         
         foodList.Add(food);
+    }
+
+    public void ResetAll()
+    {
+        foreach (var food in foodList)
+        {
+            Destroy(food);
+        }
     }
 }

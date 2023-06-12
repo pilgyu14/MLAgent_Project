@@ -21,7 +21,7 @@ public class SnakeUpgradeComp : MonoBehaviour
 
     private void Start()
     {
-        InitTails();
+        //InitTails();
     }
 
     private void InitTails()

@@ -7,7 +7,7 @@ public class ColliderReceiver : MonoBehaviour
 {
     public string[] targetTag;
     public int id;
-    public Action OnCollisionEvent; 
+    public Action OnCollisionEvent = null; 
     
     private void OnCollisionEnter(Collision collision)
     {
@@ -18,5 +18,10 @@ public class ColliderReceiver : MonoBehaviour
                 OnCollisionEvent?.Invoke();
             }
         }
+    }
+
+    public void SetCollisionEvent(Action _evt)
+    {
+        OnCollisionEvent += _evt; 
     }
 }

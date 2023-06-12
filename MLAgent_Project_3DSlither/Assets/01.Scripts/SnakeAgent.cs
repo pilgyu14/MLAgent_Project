@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+using Unity.VisualScripting;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class SnakeAgent : Agent
 {
@@ -15,23 +17,33 @@ public class SnakeAgent : Agent
 
     [SerializeField] private int exp;
     [SerializeField] private int level = 1;
-    [SerializeField] private int expMax = 5; 
-    private SnakeUpgradeComp upgradeComp; 
+    [SerializeField] private int expMax = 5;
+
+    [SerializeField] private FoodSpawner foodSpawner; 
+    
+    //private 
+    private SnakeUpgradeComp upgradeComp;
+    private SnakeUpgradeComp_V2 upgradeComp_V2; 
     
     private Vector3 targetDir;
     private Quaternion targetRot; 
     
     private Rigidbody rigid; 
     
+    
     public override void Initialize()
     {
         rigid = GetComponent<Rigidbody>();
-        upgradeComp = GetComponent<SnakeUpgradeComp>(); 
+        upgradeComp = GetComponent<SnakeUpgradeComp>();
+        upgradeComp_V2 = GetComponent<SnakeUpgradeComp_V2>();
+        foodSpawner = GetComponentInParent<FoodSpawner>(); 
     }
+    
 
     // 한판이 시작될때? 호출
     public override void OnEpisodeBegin()
     {
+        ResetAll();
     }
 
     // 관측 설정 
@@ -53,21 +65,19 @@ public class SnakeAgent : Agent
         {
             moveHorizontal = 1; 
         }
-        
-        if (actions.DiscreteActions[1] == 1)
-        {
-            moveVertical = 1; 
-        }
 
         // Calculate the movement and rotation based on input
-        Vector3 movement = new Vector3(moveHorizontal, 0f, moveVertical).normalized * moveSpeed * Time.deltaTime;
+        // Vector3 movement = new Vector3(moveHorizontal, 0f, moveVertical).normalized * moveSpeed * Time.deltaTime;
 
         // Rotate the object based on horizontal input
-        Quaternion rotation = Quaternion.Euler(0f, moveHorizontal * rotationSpeed * Time.deltaTime, 0f);
-        transform.rotation *= rotation;
-
+        //Quaternion rotation = Quaternion.Euler(0f, moveHorizontal * rotationSpeed * Time.deltaTime, 0f);
+        transform.Rotate(Vector3.up * moveHorizontal * rotationSpeed * Time.deltaTime);
+        MoveAuto();
+        
+        upgradeComp_V2.UpdateTailPos();
+        //AddReward(-1/MaxStep);
         // Move the object in the direction it is facing
-        transform.Translate(movement, Space.Self);
+        // transform.Translate(movement, Space.Self);
 
     } 
 
@@ -87,14 +97,9 @@ public class SnakeAgent : Agent
         {
             h = 2; 
         }
-        if (Input.GetKey(KeyCode.W))
-        {
-            v = 1; 
-        }
 
 
         action[0] = h;
-        action[1] = v; 
     }
 
     private void OnTriggerEnter(Collider other)
@@ -103,8 +108,22 @@ public class SnakeAgent : Agent
         {
             Food food = other.GetComponent<Food>();
             AddExp(food.GetFood());
-            AddReward(0.1f);
+            AddReward(1f);
             food.End();
+        }
+
+        if (other.CompareTag("Wall"))
+        {
+            AddReward(-0.05f);
+        }
+
+        if (other.CompareTag("Tail"))
+        {
+            if(upgradeComp_V2.CheckMyTail(other.gameObject) == true) return; 
+            AddReward(-2f);
+            EndEpisode();
+            // 리셋 
+            ResetAll(); 
         }
     }
 
@@ -114,12 +133,34 @@ public class SnakeAgent : Agent
         if (exp > expMax * level)
         {
             exp = 0; 
-            upgradeComp.LevelUp();
+            //upgradeComp.LevelUp();
+            var _tail = upgradeComp_V2.GrowSnake();
+            _tail.SetCollisionEvent(() => AddReward(3f)); 
+            AddReward(0.5f);
         }
     }
 
     private void MoveAuto()
     {
-        transform.Translate(transform.forward * moveSpeed * Time.deltaTime);
+        rigid.MovePosition(rigid.position + transform.forward * moveSpeed * Time.deltaTime);
+     //   transform.Translate(transform.forward * moveSpeed * Time.deltaTime);
     }
+
+    private void ResetAll()
+    {
+        transform.rotation = Quaternion.identity;
+        transform.localPosition = GetRandomPos();
+        exp = 0;
+        level = 0;
+        upgradeComp_V2.ResetAll();
+  //      foodSpawner.ResetAll();
+    }
+
+    private Vector3 GetRandomPos()
+    {
+        float x = Random.Range(-foodSpawner.MapSize.x/2, foodSpawner.MapSize.x/2);
+        float y = Random.Range(-foodSpawner.MapSize.y/2, foodSpawner.MapSize.y/2);
+        return new Vector3(x,5,y);
+    }
+    
 }
