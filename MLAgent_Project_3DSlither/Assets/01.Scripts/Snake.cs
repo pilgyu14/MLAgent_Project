@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.MLAgents.Extensions.Sensors;
-using Unity.VisualScripting.ReorderableList;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 

@@ -36,14 +36,14 @@ public class FoodSpawner : MonoBehaviour
         if (foodList.Count >= maxCount) return; 
         Food food = Instantiate(foodPrefab, transform);
         food.OnEndEvent = () => foodList.Remove(food); 
-        int point = Random.Range(1, 5);
+        int point = Random.Range(2, 5);
         Color color = Random.ColorHSV(); 
         food.SetRandomData(
             point, point /2, color);
 
         float sizeX = Random.Range(-mapSize.x, mapSize.x);
         float sizeY= Random.Range(-mapSize.y, mapSize.y);
-        food.transform.localPosition = new Vector3(sizeX, 0, sizeY);
+        food.transform.localPosition = new Vector3(sizeX, 0.5f, sizeY);
         
         foodList.Add(food);
     }
@@ -54,5 +54,12 @@ public class FoodSpawner : MonoBehaviour
         {
             Destroy(food);
         }
+    }
+
+    public Vector3 ReturnRandomPos()
+    {
+        float sizeX = Random.Range(-mapSize.x, mapSize.x);
+        float sizeY= Random.Range(-mapSize.y, mapSize.y);
+        return new Vector3(sizeX, 0.5f, sizeY);
     }
 }

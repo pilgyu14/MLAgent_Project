@@ -91,6 +91,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Tail
       objectReference: {fileID: 0}
+    - target: {fileID: 6124721629961319959, guid: 5823c6cbbaa71204a949bd2649142877, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5823c6cbbaa71204a949bd2649142877, type: 3}
 --- !u!1 &965786732052334338 stripped
@@ -112,6 +116,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTag:
   - Head
+  id: 0
 --- !u!4 &8570380417233979753 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3007757033016805856, guid: 5823c6cbbaa71204a949bd2649142877, type: 3}

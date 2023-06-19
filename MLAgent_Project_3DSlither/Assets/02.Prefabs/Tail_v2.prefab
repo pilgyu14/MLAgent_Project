@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6849148081955177135}
   - component: {fileID: 7360378024719415105}
   - component: {fileID: 2870166347414927883}
+  - component: {fileID: 7763342518810786069}
   m_Layer: 0
   m_Name: Tail_v2
   m_TagString: Tail
@@ -113,3 +114,19 @@ MonoBehaviour:
   targetTag:
   - Head
   id: 0
+--- !u!54 &7763342518810786069
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6985276970600007389}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 112
+  m_CollisionDetection: 0

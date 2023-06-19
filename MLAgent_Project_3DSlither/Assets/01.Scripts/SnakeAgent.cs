@@ -1,4 +1,4 @@
-using System;
+    using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.MLAgents;
@@ -10,17 +10,20 @@ using Random = UnityEngine.Random;
 
 public class SnakeAgent : Agent
 {
+    
     [SerializeField] 
     private float rotationSpeed;
     [SerializeField]
     private float moveSpeed;
 
     [SerializeField] private int exp;
-    [SerializeField] private int level = 1;
+    [SerializeField] public int level = 1;
     [SerializeField] private int expMax = 5;
 
-    [SerializeField] private FoodSpawner foodSpawner; 
-    
+    [SerializeField] private FoodSpawner foodSpawner;
+    [SerializeField] private Transform tailParent;
+
+    public Action OnDeadEvent = null; 
     //private 
     private SnakeUpgradeComp upgradeComp;
     private SnakeUpgradeComp_V2 upgradeComp_V2; 
@@ -65,19 +68,12 @@ public class SnakeAgent : Agent
         {
             moveHorizontal = 1; 
         }
-
-        // Calculate the movement and rotation based on input
-        // Vector3 movement = new Vector3(moveHorizontal, 0f, moveVertical).normalized * moveSpeed * Time.deltaTime;
-
-        // Rotate the object based on horizontal input
-        //Quaternion rotation = Quaternion.Euler(0f, moveHorizontal * rotationSpeed * Time.deltaTime, 0f);
+        
         transform.Rotate(Vector3.up * moveHorizontal * rotationSpeed * Time.deltaTime);
         MoveAuto();
         
         upgradeComp_V2.UpdateTailPos();
-        //AddReward(-1/MaxStep);
-        // Move the object in the direction it is facing
-        // transform.Translate(movement, Space.Self);
+        AddReward(-1/MaxStep);
 
     } 
 
@@ -86,7 +82,7 @@ public class SnakeAgent : Agent
     {
         var action = actionOut.DiscreteActions; 
         actionOut.Clear();
-        int h = 0; //(int) Input.GetAxisRaw("Horizontal");
+        int h = 0; //(int) Input.GetAxisRaw("Horizontal");  
         int v = 0; //(int) Input.GetAxisRaw("Vertical");
 
         if (Input.GetKey(KeyCode.A))
@@ -108,34 +104,62 @@ public class SnakeAgent : Agent
         {
             Food food = other.GetComponent<Food>();
             AddExp(food.GetFood());
-            AddReward(1f);
+            AddReward(2f);
             food.End();
         }
-
-        if (other.CompareTag("Wall"))
-        {
-            AddReward(-0.05f);
-        }
-
-        if (other.CompareTag("Tail"))
+        if (other.transform.CompareTag("Tail"))
         {
             if(upgradeComp_V2.CheckMyTail(other.gameObject) == true) return; 
-            AddReward(-2f);
+            OnDeadEvent?.Invoke();
+            AddReward(-300f);
             EndEpisode();
             // 리셋 
             ResetAll(); 
         }
+
+  
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.transform.CompareTag("Tail"))
+        {
+            if(upgradeComp_V2.CheckMyTail(collision.gameObject) == true) return; 
+            AddReward(-50f);
+            EndEpisode();
+            // 리셋 
+            ResetAll(); 
+        }
+        if (collision.transform.CompareTag("Wall"))
+        {
+            AddReward(-100f);
+            //EndEpisode();
+        }
+        
+    }
+    
+    private void OnCollisionStay(Collision collision)
+    {
+
+        if (collision.transform.CompareTag("Wall"))
+        {
+            AddReward(-1f);
+        }
+
     }
 
     private void AddExp(int _exp)
     {
         exp += _exp;
+        Mathf.Log(exp); 
+        
         if (exp > expMax * level)
         {
             exp = 0; 
             //upgradeComp.LevelUp();
             var _tail = upgradeComp_V2.GrowSnake();
-            _tail.SetCollisionEvent(() => AddReward(3f)); 
+            _tail.SetCollisionEvent(() => AddReward(30f)); 
+            _tail.transform.SetParent(tailParent,false);
             AddReward(0.5f);
         }
     }
@@ -143,6 +167,7 @@ public class SnakeAgent : Agent
     private void MoveAuto()
     {
         rigid.MovePosition(rigid.position + transform.forward * moveSpeed * Time.deltaTime);
+        //rigid.velocity = transform.forward * moveSpeed ;
      //   transform.Translate(transform.forward * moveSpeed * Time.deltaTime);
     }
 

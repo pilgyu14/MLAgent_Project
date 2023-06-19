@@ -44,19 +44,21 @@ public class SnakeUpgradeComp_V2 : MonoBehaviour
         positionHistoryList.Insert(0,transform.position);
         if (positionHistoryList.Count > 100)
         {
-            for (int i = positionHistoryList.Count; i > 100; i--)
+            for (int i = positionHistoryList.Count; i > 1000; i--)
             {
                 positionHistoryList.RemoveAt(i - 1);
             }
         }
-        int index = 0; 
+        int index = 1; 
         foreach (var tail in tailList)
         {
             Vector3 point = positionHistoryList[Mathf.Min(index * Gap,positionHistoryList.Count-1)];
             var position = tail.transform.position;
             Vector3 moveDir = point - position; 
             position += moveDir * tailSpeed * Time.deltaTime ;
-            tail.transform.position = position;
+           // tail.Rigid.MovePosition(position);
+            tail.Rigid.transform.position = position; 
+            //tail.transform.position = position;
             tail.transform.LookAt(point);
             index++; 
 
